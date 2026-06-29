@@ -35,9 +35,28 @@ async function deleteRepositoryById(id, client) {
   await db.query("DELETE FROM repositories WHERE id = $1", [id]);
 }
 
+async function findRepositoryById(id, client) {
+  const db = client || pool;
+  const result = await db.query(
+    `SELECT
+      id,
+      github_url,
+      name,
+      status,
+      default_branch,
+      created_at,
+      updated_at
+    FROM repositories
+    WHERE id = $1;`,
+    [id],
+  );
+  return result.rows[0] || null;
+}
+
 module.exports = {
   findRepositoryByGitHubUrl,
   createRepository,
   updateRepositoryStatus,
   deleteRepositoryById,
+  findRepositoryById,
 };
