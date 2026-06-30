@@ -32,5 +32,20 @@ CREATE TABLE IF NOT EXISTS repository_files (
   CONSTRAINT repository_files_repository_path_unique UNIQUE (repository_id, path)
 );
 
+CREATE TABLE repository_file_contents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    repository_file_id UUID NOT NULL
+        REFERENCES repository_files(id)
+        ON DELETE CASCADE,
+
+    content TEXT NOT NULL,
+
+    size_bytes INTEGER NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_repository_file_contents_file_id ON repository_file_contents(repository_file_id);
 CREATE INDEX IF NOT EXISTS idx_repository_files_repository_id ON repository_files(repository_id);
 CREATE INDEX IF NOT EXISTS idx_repository_files_parent_path ON repository_files(parent_path);

@@ -38,9 +38,11 @@ async function saveRepositoryFiles(repositoryId, entries, client) {
       parent_path
     )
     VALUES ${placeholders.join(", ")}
+    RETURNING id, path, type;
   `;
 
-  await db.query(query, values);
+  const result = await db.query(query, values);
+  return result.rows;
 }
 
 async function getRepositoryFiles(repositoryId, client) {

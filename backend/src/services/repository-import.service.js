@@ -10,6 +10,13 @@ const {
 } = require("../database/repository-files.repository");
 const { buildRepositoryFileTree } = require("./repository-tree.service");
 const { cloneRepository, removeTemporaryRepository } = require("./git.service");
+const {
+  getRepositoryFiles,
+} = require("../database/repository-files.repository");
+const { readRepositoryFileContents } = require("./repository-content.service");
+const {
+  saveRepositoryFileContents,
+} = require("../database/repository-file-contents.repository");
 
 async function importRepository(githubUrl) {
   let clonePath = null;
@@ -55,8 +62,17 @@ async function importRepository(githubUrl) {
         client,
       );
 
-      // Store repository tree
+      // Store repository files in the database
       await saveRepositoryFiles(repository.id, repositoryEntries, client);
+      // Read the contents (id, path, type) of the repository files from the database
+      const repositoryFiles = await getRepositoryFiles(repository.id, client);
+      // Read the contents of the repository files from the cloned repository
+      const fileContents = await readRepositoryFileContents(
+        clonePath,
+        repositoryFiles,
+      );
+      // Store the contents of the repository files in the database
+      await saveRepositoryFileContents(fileContents, client);
 
       // Mark import as completed
       const updatedRepository = await updateRepositoryStatus(
