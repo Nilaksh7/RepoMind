@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
+const { isBinaryFile } = require("isbinaryfile");
 
 const SKIPPED_EXTENSIONS = new Set([
   ".png",
@@ -49,6 +50,12 @@ async function readRepositoryFileContents(repositoryRootPath, files) {
     const absolutePath = path.join(repositoryRootPath, file.path);
 
     try {
+      // Skip binary files
+      if (await isBinaryFile(absolutePath)) {
+        console.warn(`Skipping binary file: ${file.path}`);
+        continue;
+      }
+
       const content = await fs.readFile(absolutePath, "utf8");
 
       contents.push({

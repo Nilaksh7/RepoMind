@@ -1,4 +1,7 @@
-const { findRepositoryById } = require("../database/repository.repository");
+const {
+  findRepositoryByIdForUser,
+} = require("../database/user-repository.repository");
+
 const {
   getRepositoryFileContent: fetchRepositoryFileContent,
 } = require("../database/repository-file-contents.repository");
@@ -12,7 +15,7 @@ function isValidUuid(value) {
   );
 }
 
-async function getRepositoryFileContent(repositoryId, fileId) {
+async function getRepositoryFileContent(repositoryId, fileId, userId) {
   if (
     typeof repositoryId !== "string" ||
     repositoryId.trim() === "" ||
@@ -33,7 +36,8 @@ async function getRepositoryFileContent(repositoryId, fileId) {
     throw error;
   }
 
-  const repository = await findRepositoryById(repositoryId);
+  const repository = await findRepositoryByIdForUser(userId, repositoryId);
+
   if (!repository) {
     const error = new Error("Repository not found");
     error.statusCode = 404;
@@ -41,6 +45,7 @@ async function getRepositoryFileContent(repositoryId, fileId) {
   }
 
   const file = await fetchRepositoryFileContent(repositoryId, fileId);
+
   if (!file) {
     const error = new Error("Repository file not found");
     error.statusCode = 404;

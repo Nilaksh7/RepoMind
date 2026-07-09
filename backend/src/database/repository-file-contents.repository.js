@@ -50,6 +50,15 @@ WHERE repository_files.repository_id = $1
   `;
 
   const result = await db.query(query, [repositoryId, fileId]);
+
+  if (result.rows.length === 0) {
+    console.log("Missing file:", {
+      repositoryId,
+
+      fileId,
+    });
+  }
+
   return result.rows[0] || null;
 }
 

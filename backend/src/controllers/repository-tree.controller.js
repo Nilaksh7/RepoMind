@@ -5,7 +5,8 @@ const {
 async function getRepositoryTreeController(req, res, next) {
   try {
     const { repositoryId } = req.params;
-    const result = await getRepositoryTree(repositoryId);
+
+    const result = await getRepositoryTree(repositoryId, req.user.id);
 
     return res.status(200).json({
       success: true,
@@ -13,7 +14,7 @@ async function getRepositoryTreeController(req, res, next) {
       tree: result.tree,
     });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 }
 

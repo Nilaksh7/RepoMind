@@ -2,12 +2,31 @@ const fs = require("fs/promises");
 const path = require("path");
 
 const IGNORED_DIRECTORIES = new Set([
-  "node_modules",
   ".git",
+  "node_modules",
   "dist",
   "build",
   "coverage",
   ".next",
+  ".turbo",
+  ".cache",
+  ".idea",
+  ".vscode",
+  "__pycache__",
+  ".venv",
+  "venv",
+]);
+
+const IGNORED_FILES = new Set([
+  "package-lock.json",
+  "yarn.lock",
+  "pnpm-lock.yaml",
+  "bun.lockb",
+  "uv.lock",
+  "poetry.lock",
+  "Pipfile.lock",
+  "Cargo.lock",
+  "composer.lock",
 ]);
 
 const IGNORED_EXTENSIONS = new Set([
@@ -17,14 +36,25 @@ const IGNORED_EXTENSIONS = new Set([
   ".gif",
   ".webp",
   ".svg",
-  ".mp4",
-  ".mov",
-  ".mp3",
-  ".wav",
+  ".ico",
   ".pdf",
   ".zip",
   ".tar",
   ".gz",
+  ".rar",
+  ".7z",
+  ".mp4",
+  ".mov",
+  ".avi",
+  ".mkv",
+  ".mp3",
+  ".wav",
+  ".ogg",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".otf",
 ]);
 
 async function buildRepositoryFileTree(repositoryPath) {
@@ -36,13 +66,15 @@ async function buildRepositoryFileTree(repositoryPath) {
 
   async function traverse(currentPath, parentRelativePath) {
     let entries;
+
     try {
-      entries = await fs.readdir(currentPath, { withFileTypes: true });
+      entries = await fs.readdir(currentPath, {
+        withFileTypes: true,
+      });
     } catch (error) {
       throw new Error(`Cannot read directory ${currentPath}: ${error.message}`);
     }
 
-    // Sort alphabetically for deterministic output
     entries.sort((a, b) => a.name.localeCompare(b.name));
 
     for (const entry of entries) {
@@ -63,44 +95,55 @@ async function buildRepositoryFileTree(repositoryPath) {
           parentPath: parentRelativePath || null,
         });
 
-        const entryPath = path.join(currentPath, entry.name);
-        await traverse(entryPath, entryRelativePath);
-      } else if (entry.isFile()) {
-        // Skip .env and .env.* files
-        if (entry.name === ".env" || entry.name.startsWith(".env.")) {
-          continue;
-        }
+        await traverse(path.join(currentPath, entry.name), entryRelativePath);
 
-        // Skip ignored extensions
-        const ext = path.extname(entry.name);
-        if (IGNORED_EXTENSIONS.has(ext)) {
-          continue;
-        }
-
-        result.push({
-          path: entryRelativePath,
-          name: entry.name,
-          type: "file",
-          extension: ext || null,
-          parentPath: parentRelativePath || null,
-        });
+        continue;
       }
+
+      if (!entry.isFile()) {
+        continue;
+      }
+
+      // Skip environment files
+      if (entry.name === ".env" || entry.name.startsWith(".env.")) {
+        continue;
+      }
+
+      // Skip dependency lock files
+      if (IGNORED_FILES.has(entry.name)) {
+        continue;
+      }
+
+      // Skip binary assets
+      const extension = path.extname(entry.name).toLowerCase();
+
+      if (IGNORED_EXTENSIONS.has(extension)) {
+        continue;
+      }
+
+      result.push({
+        path: entryRelativePath,
+        name: entry.name,
+        type: "file",
+        extension: extension || null,
+        parentPath: parentRelativePath || null,
+      });
     }
   }
 
   await traverse(repositoryPath, "");
 
-  // Convert paths to forward slashes for Windows compatibility
   result.forEach((entry) => {
     entry.path = entry.path.split(path.sep).join("/");
+
     if (entry.parentPath) {
-      entry.parentPath = entry.parentPath
-        ? entry.parentPath.split(path.sep).join("/")
-        : null;
+      entry.parentPath = entry.parentPath.split(path.sep).join("/");
     }
   });
 
   return result;
 }
 
-module.exports = { buildRepositoryFileTree };
+module.exports = {
+  buildRepositoryFileTree,
+};

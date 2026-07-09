@@ -1,95 +1,111 @@
 const pool = require("../config/db");
 const { parseGitHubRepositoryUrl } = require("../utils/github-url");
+
 const {
   findRepositoryByGitHubUrl,
   createRepository,
   updateRepositoryStatus,
 } = require("../database/repository.repository");
-const {
-  saveRepositoryFiles,
-} = require("../database/repository-files.repository");
-const { buildRepositoryFileTree } = require("./repository-tree.service");
-const { cloneRepository, removeTemporaryRepository } = require("./git.service");
-const {
-  getRepositoryFiles,
-} = require("../database/repository-files.repository");
-const { readRepositoryFileContents } = require("./repository-content.service");
-const {
-  saveRepositoryFileContents,
-} = require("../database/repository-file-contents.repository");
 
-async function importRepository(githubUrl) {
+const {
+  createUserRepositoryMapping,
+} = require("../database/user-repository.repository");
+
+const { cloneRepository, removeTemporaryRepository } = require("./git.service");
+
+const { getLatestRepositoryVersion } = require("./repository-version.service");
+
+const { indexRepository } = require("./repository-indexing.service");
+
+const { refreshRepository } = require("./repository-refresh.service");
+
+const { indexRepositoryEmbeddings } = require("./repository-ai-index.service");
+
+async function importRepository(githubUrl, userId) {
   let clonePath = null;
   let client = null;
 
   try {
-    // Step 1: Validate and normalize the GitHub URL
+    // Step 1: Validate GitHub URL
     const { normalizedUrl, repositoryName } =
       parseGitHubRepositoryUrl(githubUrl);
 
-    // Step 2: Reject duplicate imports
+    // Step 2: Get latest version from GitHub
+    const repositoryVersion = await getLatestRepositoryVersion(normalizedUrl);
+
+    // Step 3: Check if repository already exists
     const existingRepository = await findRepositoryByGitHubUrl(normalizedUrl);
 
-    if (existingRepository) {
-      const error = new Error("Repository has already been imported");
-      error.statusCode = 409;
-      throw error;
-    }
+    // ==================================================
+    // NEW REPOSITORY
+    // ==================================================
+    if (!existingRepository) {
+      client = await pool.connect();
 
-    // Step 3: Clone repository to a temporary location
-    const temporaryCloneId = `import-${Date.now()}`;
+      try {
+        await client.query("BEGIN");
 
-    clonePath = await cloneRepository({
-      githubUrl: normalizedUrl,
-      repositoryId: temporaryCloneId,
-    });
-
-    // Step 4: Traverse the repository and build the flat tree
-    const repositoryEntries = await buildRepositoryFileTree(clonePath);
-
-    // Step 5: Start database transaction
-    client = await pool.connect();
-
-    try {
-      await client.query("BEGIN");
-
-      // Create repository record
-      const repository = await createRepository(
-        {
+        clonePath = await cloneRepository({
           githubUrl: normalizedUrl,
-          name: repositoryName,
-        },
-        client,
-      );
+          repositoryId: `import-${Date.now()}`,
+        });
 
-      // Store repository files in the database
-      await saveRepositoryFiles(repository.id, repositoryEntries, client);
-      // Read the contents (id, path, type) of the repository files from the database
-      const repositoryFiles = await getRepositoryFiles(repository.id, client);
-      // Read the contents of the repository files from the cloned repository
-      const fileContents = await readRepositoryFileContents(
-        clonePath,
-        repositoryFiles,
-      );
-      // Store the contents of the repository files in the database
-      await saveRepositoryFileContents(fileContents, client);
+        let repository = await createRepository(
+          {
+            githubUrl: normalizedUrl,
+            name: repositoryName,
+            defaultBranch: repositoryVersion.defaultBranch,
+            latestCommitSha: repositoryVersion.sha,
+          },
+          client,
+        );
 
-      // Mark import as completed
-      const updatedRepository = await updateRepositoryStatus(
-        repository.id,
-        "imported",
-        client,
-      );
+        await indexRepository(repository.id, clonePath, client);
 
-      await client.query("COMMIT");
+        repository = await updateRepositoryStatus(
+          repository.id,
+          "imported",
+          client,
+        );
 
-      return updatedRepository;
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
+        await createUserRepositoryMapping(userId, repository.id, client);
+
+        await client.query("COMMIT");
+
+        // Generate AI embeddings after successful commit
+        console.log("Repository:", repository.id);
+
+        try {
+          await indexRepositoryEmbeddings(repository.id);
+        } catch (error) {
+          console.error(error);
+        }
+
+        return repository;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
     }
+
+    // ==================================================
+    // EXISTING REPOSITORY
+    // ==================================================
+
+    let repository = existingRepository;
+
+    if (existingRepository.latest_commit_sha !== repositoryVersion.sha) {
+      repository = await refreshRepository({
+        repository: existingRepository,
+        repositoryVersion,
+      });
+    }
+
+    await createUserRepositoryMapping(userId, repository.id);
+
+    return repository;
   } finally {
     if (clonePath) {
       try {

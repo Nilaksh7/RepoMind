@@ -66,7 +66,20 @@ async function getRepositoryFiles(repositoryId, client) {
   return result.rows;
 }
 
+async function deleteRepositoryFiles(repositoryId, client) {
+  const db = client || pool;
+
+  await db.query(
+    `
+    DELETE FROM repository_files
+    WHERE repository_id = $1
+    `,
+    [repositoryId],
+  );
+}
+
 module.exports = {
   saveRepositoryFiles,
   getRepositoryFiles,
+  deleteRepositoryFiles,
 };

@@ -2,17 +2,19 @@ function buildNestedRepositoryTree(entries) {
   const nodesByPath = new Map();
   const roots = [];
 
-  // First pass: create every node
+  // Create every node
   for (const entry of entries) {
     const node =
       entry.type === "directory"
         ? {
+            id: entry.id,
             name: entry.name,
             path: entry.path,
             type: entry.type,
             children: [],
           }
         : {
+            id: entry.id,
             name: entry.name,
             path: entry.path,
             type: entry.type,
@@ -22,7 +24,7 @@ function buildNestedRepositoryTree(entries) {
     nodesByPath.set(entry.path, node);
   }
 
-  // Second pass: attach nodes to their parents
+  // Attach nodes to parents
   for (const entry of entries) {
     const node = nodesByPath.get(entry.path);
 
@@ -36,7 +38,6 @@ function buildNestedRepositoryTree(entries) {
     if (parent && parent.type === "directory") {
       parent.children.push(node);
     } else {
-      // Parent missing, treat as root
       roots.push(node);
     }
   }

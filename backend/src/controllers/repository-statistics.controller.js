@@ -6,7 +6,10 @@ async function getRepositoryStatisticsController(req, res, next) {
   try {
     const { repositoryId } = req.params;
 
-    const result = await getRepositoryStatisticsSummary(repositoryId);
+    const result = await getRepositoryStatisticsSummary(
+      repositoryId,
+      req.user.id,
+    );
 
     return res.status(200).json({
       success: true,
@@ -16,7 +19,7 @@ async function getRepositoryStatisticsController(req, res, next) {
       largestFiles: result.largestFiles,
     });
   } catch (error) {
-    return next(error);
+    next(error);
   }
 }
 

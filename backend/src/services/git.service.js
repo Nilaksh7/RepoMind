@@ -10,7 +10,7 @@ async function cloneRepository({ githubUrl, repositoryId }) {
   const destinationPath = path.join(TEMP_REPOSITORIES_DIRECTORY, repositoryId);
 
   const git = simpleGit();
-  await git.clone(githubUrl, destinationPath);
+  await git.clone(githubUrl, destinationPath, ["--depth=1", "--single-branch"]);
 
   return destinationPath;
 }

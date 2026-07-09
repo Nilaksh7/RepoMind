@@ -1,13 +1,17 @@
-const { findRepositoryById } = require("../database/repository.repository");
+const {
+  findRepositoryByIdForUser,
+} = require("../database/user-repository.repository");
+
 const {
   getRepositoryFiles,
 } = require("../database/repository-files.repository");
+
 const { buildNestedRepositoryTree } = require("../utils/build-tree");
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-async function getRepositoryTree(repositoryId) {
+async function getRepositoryTree(repositoryId, userId) {
   if (typeof repositoryId !== "string" || repositoryId.trim() === "") {
     const error = new Error("Repository ID is required");
     error.statusCode = 400;
@@ -22,7 +26,8 @@ async function getRepositoryTree(repositoryId) {
     throw error;
   }
 
-  const repository = await findRepositoryById(repositoryId);
+  // Verify that the repository belongs to the authenticated user
+  const repository = await findRepositoryByIdForUser(userId, repositoryId);
 
   if (!repository) {
     const error = new Error("Repository not found");

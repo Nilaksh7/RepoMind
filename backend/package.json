@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon --ignore temp/ src/server.js",
     "start": "node src/server.js"
   },
   "keywords": [],
@@ -14,6 +14,9 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "google-auth-library": "^10.9.0",
+    "isbinaryfile": "^5.0.7",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0",
     "simple-git": "^3.36.0",
     "uuid": "^14.0.1"

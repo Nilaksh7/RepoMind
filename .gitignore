@@ -1,23 +1,45 @@
+# =========================
 # Dependencies
+# =========================
 node_modules/
+.venv/
 
-# Environment variables
+# =========================
+# Environment Variables
+# =========================
 .env
 .env.*
 
-# Temporary cloned repositories
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+!ai-service/.env.example
+
+# =========================
+# Temporary Files
+# =========================
 backend/temp/*
 !backend/temp/.gitkeep
-!.env.example
+temp/
 
-!backend/.env.example
+# =========================
+# Python
+# =========================
+__pycache__/
+*.pyc
 
-# Build output
+# =========================
+# Build Output
+# =========================
 dist/
 build/
 
-# OS files
-.DS_Store
-
+# =========================
 # Logs
+# =========================
 *.log
+
+# =========================
+# OS Files
+# =========================
+.DS_Store

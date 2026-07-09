@@ -5,9 +5,14 @@ const {
 async function getRepositoryFileContentController(req, res, next) {
   try {
     const { repositoryId, fileId } = req.params;
-    const result = await getRepositoryFileContent(repositoryId, fileId);
 
-    res.status(200).json({
+    const result = await getRepositoryFileContent(
+      repositoryId,
+      fileId,
+      req.user.id,
+    );
+
+    return res.status(200).json({
       success: true,
       file: result,
     });

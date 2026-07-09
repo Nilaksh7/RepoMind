@@ -1,4 +1,6 @@
-const { findRepositoryById } = require("../database/repository.repository");
+const {
+  findRepositoryByIdForUser,
+} = require("../database/user-repository.repository");
 
 const {
   getRepositoryStatistics,
@@ -15,7 +17,7 @@ function isValidUuid(value) {
   );
 }
 
-async function getRepositoryStatisticsSummary(repositoryId) {
+async function getRepositoryStatisticsSummary(repositoryId, userId) {
   if (
     typeof repositoryId !== "string" ||
     repositoryId.trim() === "" ||
@@ -26,7 +28,8 @@ async function getRepositoryStatisticsSummary(repositoryId) {
     throw error;
   }
 
-  const repository = await findRepositoryById(repositoryId);
+  const repository = await findRepositoryByIdForUser(userId, repositoryId);
+
   if (!repository) {
     const error = new Error("Repository not found");
     error.statusCode = 404;
