@@ -159,7 +159,6 @@ Public GitHub Repository
 
 ---
 
-# 🧰 Tech Stack
 
 # 🧰 Tech Stack
 
