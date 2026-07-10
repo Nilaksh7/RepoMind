@@ -1,67 +1,25 @@
-"""Utilities for generating text embeddings using Gemini."""
+"""Utilities for generating text embeddings."""
 
-import os
-import time
-
-from dotenv import load_dotenv
-from google import genai
-
-load_dotenv()
-
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-
-MODEL = "gemini-embedding-001"
-MAX_RETRIES = 3
+from sentence_transformers import SentenceTransformer
 
 
-def generate_embeddings(texts: list[str]) -> list[list[float]]:
-    """Generate embeddings for multiple texts.
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
-    Args:
-        texts: List of input texts.
-
-    Returns:
-        List of embedding vectors in the same order.
-
-    Raises:
-        ValueError: If the input list is empty.
-    """
-
-    if not texts:
-        raise ValueError("texts cannot be empty")
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            response = client.models.embed_content(
-                model=MODEL,
-                contents=texts,
-            )
-
-            return [
-                embedding.values
-                for embedding in response.embeddings
-            ]
-
-        except Exception as error:
-            message = str(error)
-
-            should_retry = (
-                "429" in message
-                or "503" in message
-                or "RESOURCE_EXHAUSTED" in message
-                or "UNAVAILABLE" in message
-            )
-
-            if not should_retry or attempt == MAX_RETRIES - 1:
-                raise
-
-            time.sleep(2 ** attempt)
-            
 
 def generate_embedding(text: str) -> list[float]:
-    """Generate an embedding for a single text."""
+	"""Generate a single embedding vector for the given text.
 
-    if not isinstance(text, str) or not text.strip():
-        raise ValueError("Text must be a non-empty string")
+	Args:
+		text: The input text to embed.
 
-    return generate_embeddings([text])[0]
+	Returns:
+		A list of floats representing the embedding vector.
+
+	Raises:
+		ValueError: If text is empty or only whitespace.
+	"""
+	if not isinstance(text, str) or not text.strip():
+		raise ValueError("Text must be a non-empty string")
+
+	embedding = model.encode(text)
+	return embedding.tolist()

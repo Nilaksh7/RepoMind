@@ -2,10 +2,9 @@
 
 from app.config.database import pool
 from app.services.embedding_repository import save_embeddings
-from app.services.embedding_service import generate_embeddings
+from app.services.embedding_service import generate_embedding
 from app.services.repository_service import get_repository_files
 from app.utils.text_chunker import chunk_text
-import traceback
 
 
 def update_ai_index_status(
@@ -32,7 +31,14 @@ def update_ai_index_status(
 
 
 def process_repository(repository_id: str) -> dict:
-    """Process a repository and generate embeddings for every text chunk."""
+    """Process a repository and generate embeddings for every text chunk.
+
+    Args:
+        repository_id: Repository UUID.
+
+    Returns:
+        Dictionary containing processing statistics.
+    """
 
     update_ai_index_status(
         repository_id,
@@ -46,8 +52,6 @@ def process_repository(repository_id: str) -> dict:
         chunks_processed = 0
         embedding_records = []
 
-        pending_chunks = []
-
         for file_entry in files:
             content = file_entry.get("content")
 
@@ -59,40 +63,20 @@ def process_repository(repository_id: str) -> dict:
             chunks = chunk_text(content)
 
             for chunk_index, chunk in enumerate(chunks):
-                pending_chunks.append(
-                    {
-                        "repository_file_id": file_entry["id"],
-                        "path": file_entry["path"],
-                        "chunk_index": chunk_index,
-                        "chunk_text": chunk,
-                    }
-                )
+                embedding = generate_embedding(chunk)
 
-        BATCH_SIZE = 50
-
-        for start in range(0, len(pending_chunks), BATCH_SIZE):
-            batch = pending_chunks[start:start + BATCH_SIZE]
-
-            texts = [
-                item["chunk_text"]
-                for item in batch
-            ]
-
-            embeddings = generate_embeddings(texts)
-
-            for item, embedding in zip(batch, embeddings):
                 embedding_records.append(
                     {
-                        "repository_file_id": item["repository_file_id"],
-                        "chunk_index": item["chunk_index"],
-                        "chunk_text": item["chunk_text"],
+                        "repository_file_id": file_entry["id"],
+                        "chunk_index": chunk_index,
+                        "chunk_text": chunk,
                         "embedding": embedding,
                     }
                 )
 
-                print(f"File: {item['path']}")
-                print(f"Chunk: {item['chunk_index']}")
-                print(f"Chunk size: {len(item['chunk_text'])}")
+                print(f"File: {file_entry['path']}")
+                print(f"Chunk: {chunk_index}")
+                print(f"Chunk size: {len(chunk)}")
                 print(f"Embedding dimension: {len(embedding)}")
                 print("-" * 50)
 
@@ -106,12 +90,8 @@ def process_repository(repository_id: str) -> dict:
                         connection,
                     )
                     connection.commit()
-                except Exception as error:
+                except Exception:
                     connection.rollback()
-                    print("=" * 80)
-                    print("FAILED WHILE SAVING EMBEDDINGS")
-                    traceback.print_exc()
-                    print("=" * 80)
                     raise
 
         update_ai_index_status(
@@ -126,16 +106,8 @@ def process_repository(repository_id: str) -> dict:
         }
 
     except Exception:
-        import traceback
-
-        print("=" * 80)
-        print("REPOSITORY INDEXING FAILED")
-        traceback.print_exc()
-        print("=" * 80)
-
         update_ai_index_status(
             repository_id,
             "failed",
         )
-
         raise
