@@ -1,9 +1,13 @@
 const axios = require("axios");
 
 async function indexRepositoryEmbeddings(repositoryId) {
+  const url = `${process.env.AI_SERVICE_URL}/repositories/${repositoryId}/index`;
+
+  console.log("Calling:", url);
+
   try {
     const response = await axios.post(
-      `${process.env.AI_SERVICE_URL}/repositories/${repositoryId}/index`,
+      url,
       {},
       {
         headers: {
@@ -12,23 +16,17 @@ async function indexRepositoryEmbeddings(repositoryId) {
       },
     );
 
+    console.log("AI Success:", response.status);
+
     return response.data;
-  } catch (error) {
-    console.log("===== AI REQUEST FAILED =====");
+  } catch (err) {
+    console.log("========== AI ERROR ==========");
+    console.log("Status:", err.response?.status);
+    console.log("Body:", err.response?.data);
+    console.log("Message:", err.message);
+    console.log("=============================");
 
-    console.log(
-      "URL:",
-      `${process.env.AI_SERVICE_URL}/repositories/${repositoryId}/index`,
-    );
-
-    if (error.response) {
-      console.log("Status:", error.response.status);
-      console.log("Body:", error.response.data);
-    } else {
-      console.log("Message:", error.message);
-    }
-
-    throw error;
+    throw err;
   }
 }
 
