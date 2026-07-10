@@ -56,7 +56,14 @@ async function readRepositoryFileContents(repositoryRootPath, files) {
         continue;
       }
 
-      const content = await fs.readFile(absolutePath, "utf8");
+      const rawContent = await fs.readFile(absolutePath, "utf8");
+
+      // PostgreSQL TEXT cannot contain NULL bytes.
+      const content = rawContent.replace(/\0/g, "");
+
+      if (!content.trim()) {
+        continue;
+      }
 
       contents.push({
         repositoryFileId: file.id,
