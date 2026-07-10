@@ -16,6 +16,7 @@ async function getLatestRepositoryVersion(githubUrl) {
     {
       headers: {
         Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
       },
     },
   );
@@ -37,6 +38,7 @@ async function getLatestRepositoryVersion(githubUrl) {
     {
       headers: {
         Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
       },
     },
   );
