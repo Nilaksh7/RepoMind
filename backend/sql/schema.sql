@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS repository_embeddings (
 
     chunk_text TEXT NOT NULL,
 
-    embedding VECTOR(384) NOT NULL,
+    embedding VECTOR(3072) NOT NULL,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -194,10 +194,6 @@ ON repository_files(parent_path);
 
 CREATE INDEX IF NOT EXISTS idx_repository_embeddings_file
 ON repository_embeddings(repository_file_id);
-
-CREATE INDEX IF NOT EXISTS idx_repository_embeddings_vector
-ON repository_embeddings
-USING hnsw (embedding vector_cosine_ops);
 
 CREATE INDEX IF NOT EXISTS idx_user_repositories_user
 ON user_repositories(user_id);
