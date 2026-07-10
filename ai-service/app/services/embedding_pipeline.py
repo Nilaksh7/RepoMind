@@ -5,6 +5,7 @@ from app.services.embedding_repository import save_embeddings
 from app.services.embedding_service import generate_embeddings
 from app.services.repository_service import get_repository_files
 from app.utils.text_chunker import chunk_text
+import traceback
 
 
 def update_ai_index_status(
@@ -105,8 +106,12 @@ def process_repository(repository_id: str) -> dict:
                         connection,
                     )
                     connection.commit()
-                except Exception:
+                except Exception as error:
                     connection.rollback()
+                    print("=" * 80)
+                    print("FAILED WHILE SAVING EMBEDDINGS")
+                    traceback.print_exc()
+                    print("=" * 80)
                     raise
 
         update_ai_index_status(
@@ -121,8 +126,16 @@ def process_repository(repository_id: str) -> dict:
         }
 
     except Exception:
+        import traceback
+
+        print("=" * 80)
+        print("REPOSITORY INDEXING FAILED")
+        traceback.print_exc()
+        print("=" * 80)
+
         update_ai_index_status(
             repository_id,
             "failed",
         )
+
         raise

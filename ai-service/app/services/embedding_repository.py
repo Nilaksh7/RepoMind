@@ -1,6 +1,7 @@
 """Database helpers for saving text embeddings."""
 
 from typing import Any
+import traceback
 
 
 def save_embeddings(entries: list[dict[str, Any]], connection) -> None:
@@ -34,4 +35,11 @@ def save_embeddings(entries: list[dict[str, Any]], connection) -> None:
     ]
 
     with connection.cursor() as cursor:
-        cursor.executemany(query, values)
+        try:
+            cursor.executemany(query, values)
+        except Exception:
+            print("=" * 80)
+            print("DATABASE INSERT FAILED")
+            traceback.print_exc()
+            print("=" * 80)
+            raise
