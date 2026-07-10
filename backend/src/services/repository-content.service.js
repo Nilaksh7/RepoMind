@@ -61,10 +61,6 @@ async function readRepositoryFileContents(repositoryRootPath, files) {
       // PostgreSQL TEXT cannot contain NULL bytes.
       const content = rawContent.replace(/\0/g, "");
 
-      if (!content.trim()) {
-        continue;
-      }
-
       contents.push({
         repositoryFileId: file.id,
         content,

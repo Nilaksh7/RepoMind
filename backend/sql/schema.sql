@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS repository_embeddings (
 
     chunk_text TEXT NOT NULL,
 
-    embedding VECTOR(384) NOT NULL,
+    embedding VECTOR(1536) NOT NULL,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
