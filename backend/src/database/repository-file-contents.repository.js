@@ -3,33 +3,35 @@ const pool = require("../config/db");
 async function saveRepositoryFileContents(entries, client) {
   const db = client || pool;
 
-  if (!Array.isArray(entries) || entries.length === 0) {
-    return;
+  if (!entries.length) return;
+
+  const BATCH_SIZE = 1000;
+
+  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+    const batch = entries.slice(i, i + BATCH_SIZE);
+
+    const values = [];
+    const placeholders = [];
+
+    batch.forEach((entry, index) => {
+      const start = index * 3 + 1;
+
+      placeholders.push(`($${start}, $${start + 1}, $${start + 2})`);
+
+      values.push(entry.repositoryFileId, entry.content, entry.sizeBytes);
+    });
+
+    const query = `
+      INSERT INTO repository_file_contents (
+        repository_file_id,
+        content,
+        size_bytes
+      )
+      VALUES ${placeholders.join(", ")}
+    `;
+
+    await db.query(query, values);
   }
-
-  const values = [];
-  const placeholders = [];
-
-  entries.forEach((entry, index) => {
-    const startIndex = index * 3 + 1;
-
-    placeholders.push(
-      `($${startIndex}, $${startIndex + 1}, $${startIndex + 2})`,
-    );
-
-    values.push(entry.repositoryFileId, entry.content, entry.sizeBytes);
-  });
-
-  const query = `
-    INSERT INTO repository_file_contents (
-      repository_file_id,
-      content,
-      size_bytes
-    )
-    VALUES ${placeholders.join(", ")}
-  `;
-
-  await db.query(query, values);
 }
 
 async function getRepositoryFileContent(repositoryId, fileId, client) {
