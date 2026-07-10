@@ -2,7 +2,7 @@
 
 # 🧠 RepoMind
 
-**AI-Powered GitHub Repository Intelligence Platform**
+****AI-Powered GitHub Repository Intelligence Platform built with Semantic Search, Vector Embeddings, and Retrieval-Augmented Generation (RAG).****
 
 Understand any unfamiliar codebase in minutes—not hours—through semantic search, AI-generated repository summaries, file explanations, dependency graphs, and conversational AI.
 
@@ -11,11 +11,13 @@ Understand any unfamiliar codebase in minutes—not hours—through semantic sea
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Google Gemini](https://img.shields.io/badge/Gemini-AI-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Cohere](https://img.shields.io/badge/Cohere-Embeddings-FF6B35)](https://cohere.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **Import • Search • Understand • Explore Any GitHub Repository**
 
 🚀 **Live Demo:** https://repo-mind-mu.vercel.app
+⚡ **Architecture:** React • Express • FastAPI • PostgreSQL • pgvector • Gemini • Cohere
 
 [Features](#-features) • [Architecture](#-architecture) • [Getting Started](#-getting-started) • [Screenshots](#-screenshots) • [Roadmap](#-roadmap)
 
@@ -30,6 +32,19 @@ Understanding an unfamiliar GitHub repository is often slow and frustrating. Dev
 **RepoMind** transforms any public GitHub repository into an AI-powered workspace. It combines repository indexing, semantic code search, vector embeddings, Retrieval-Augmented Generation (RAG), dependency analysis, and Large Language Models to help developers understand unfamiliar codebases significantly faster.
 
 ---
+
+# 🚀 Key Highlights
+
+- Import and analyze any public GitHub repository
+- Automatic repository indexing and metadata extraction
+- Intelligent source code chunking
+- Vector embedding generation using Cohere
+- Semantic code search powered by pgvector
+- Retrieval-Augmented Generation (RAG) with Google Gemini
+- AI-generated repository summaries and file explanations
+- Interactive dependency graph visualization
+- Automatic repository refresh using latest Git commit SHA
+- Google OAuth authentication with JWT-based authorization
 
 # 🎯 Why RepoMind?
 
@@ -49,7 +64,7 @@ Instead of manually reading hundreds of files, RepoMind lets developers:
 
 | Feature | Description |
 |---------|-------------|
-| **Repository Import** | Import any public GitHub repository with automatic indexing, vector embedding generation, semantic search support, and repository refresh when newer commits are detected. |
+| **Repository Import & Indexing** | Validates, clones, indexes, chunks source files, generates vector embeddings, stores repository metadata, and automatically refreshes repositories when newer commits are detected. |
 | **AI Repository Summary** | Generate a high-level overview covering project purpose, architecture, modules, technologies, and workflows. |
 | **AI File Explanation** | Instantly understand any source file, including its responsibilities, code flow, important functions, and interactions with other files. |
 | **Semantic Code Search** | Search repositories using natural language instead of filenames or exact symbols (e.g. *authentication*, *JWT*, *payment middleware*). |
@@ -59,6 +74,58 @@ Instead of manually reading hundreds of files, RepoMind lets developers:
 
 ---
 
+# ⚙️ How RepoMind Works
+
+Every imported repository goes through an AI-powered indexing pipeline before becoming searchable.
+
+```text
+Public GitHub Repository
+            │
+            ▼
+ Repository Validation
+            │
+            ▼
+     Git Clone
+            │
+            ▼
+ Repository Traversal
+            │
+            ▼
+ Metadata Extraction
+            │
+            ▼
+ Binary File Filtering
+            │
+            ▼
+ Intelligent Text Chunking
+            │
+            ▼
+ Cohere Embeddings
+            │
+            ▼
+ PostgreSQL + pgvector
+            │
+            ▼
+ Semantic Retrieval
+            │
+            ▼
+ Google Gemini (RAG)
+            │
+            ▼
+ AI-powered Responses
+```
+
+### During indexing RepoMind automatically:
+
+- Traverses the repository recursively
+- Builds the repository file tree
+- Extracts readable source code
+- Skips binary and unsupported files
+- Chunks large files into semantic segments
+- Generates vector embeddings
+- Stores embeddings in PostgreSQL using pgvector
+- Enables semantic search and Retrieval-Augmented Generation (RAG)
+
 # 🏗 Architecture
 
 ```text
@@ -66,39 +133,60 @@ Instead of manually reading hundreds of files, RepoMind lets developers:
                     │  React Frontend  │
                     └────────┬─────────┘
                              │
-                        REST API (JWT)
+                         REST API
                              │
                     ┌────────▼────────┐
                     │ Express Backend │
                     └────────┬────────┘
                              │
-               ┌─────────────┴─────────────┐
-               │                           │
-        ┌──────▼──────────┐       ┌────────▼─────────┐
-        │ PostgreSQL      │       │ FastAPI AI       │
-        │ + pgvector      │       │ Service          │
-        └─────────────────┘       └────────┬─────────┘
-                                           │
-                                  Gemini + Cohere Embeddings
-                                           │
-                                           ▼
-                                 RAG + Semantic Search
+      Repository Import • Indexing • AI Orchestration
+                             │
+          ┌──────────────────┴──────────────────┐
+          │                                     │
+          ▼                                     ▼
+ ┌──────────────────────┐            ┌──────────────────────┐
+ │ PostgreSQL           │            │ FastAPI AI Service   │
+ │ + pgvector           │            │                      │
+ │                      │            │ • Chunking           │
+ │ • Repository Data    │            │ • Cohere Embeddings  │
+ │ • File Metadata      │            │ • Semantic Retrieval │
+ │ • Vector Embeddings  │            │ • Gemini (RAG)       │
+ └──────────┬───────────┘            └──────────┬───────────┘
+            └──────────────────┬────────────────┘
+                               ▼
+                  AI-Powered Repository Insights
 ```
 
 ---
 
 # 🧰 Tech Stack
 
-| Frontend | Backend | AI Service |
-|----------|----------|------------|
-| React 19 | Node.js | FastAPI |
-| Vite | Express.js | Google Gemini |
-| Tailwind CSS | PostgreSQL + pgvector | Cohere Embeddings |
-| React Router | JWT Authentication | RAG Pipeline |
-| Axios | Google OAuth | Semantic Search |
-| React Flow | REST APIs | Python |
+# 🧰 Tech Stack
+
+| Layer | Technologies |
+|-------|--------------|
+| **Frontend** | React 19, Vite, Tailwind CSS, React Router, Axios, React Flow |
+| **Backend** | Node.js, Express.js, JWT Authentication, Google OAuth |
+| **AI Service** | FastAPI, Google Gemini, Cohere Embed API |
+| **Database** | PostgreSQL, pgvector |
+| **AI Techniques** | Retrieval-Augmented Generation (RAG), Semantic Search, Vector Embeddings, Intelligent Text Chunking |
+| **Deployment** | Vercel, Render, Supabase |
 
 ---
+
+# ⚡ Technical Highlights
+
+- Multi-service architecture using React, Express, and FastAPI
+- Automatic GitHub repository version detection using latest commit SHA
+- Recursive repository traversal and metadata extraction
+- Binary file detection and filtering
+- Intelligent source code chunking
+- Batch vector embedding generation
+- Semantic similarity search using PostgreSQL pgvector
+- Retrieval-Augmented Generation (RAG) with Google Gemini
+- Interactive dependency graph generation
+- Secure Google OAuth authentication with JWT-based authorization
+
 
 # 📁 Project Structure
 
@@ -205,6 +293,8 @@ GITHUB_TOKEN=
 AI_SERVICE_URL=
 
 AI_SERVICE_API_KEY=
+
+GITHUB_TOKEN=
 ```
 
 ---
@@ -229,6 +319,8 @@ GEMINI_API_KEY=
 COHERE_API_KEY=
 
 GEMINI_MODEL=gemini-3.1-flash-lite
+
+AI_SERVICE_API_KEY=
 
 AI_SERVICE_API_KEY=
 ```
@@ -324,6 +416,16 @@ AI_SERVICE_API_KEY=
 ![AI File Explanation](docs/images/explain.png)
 
 ---
+
+# 🎯 Built For
+
+RepoMind is designed to help:
+
+- Developers onboarding to unfamiliar codebases
+- Open-source contributors
+- Software engineering teams
+- Students learning large projects
+- Technical interview preparation
 
 # 🗺 Roadmap
 
