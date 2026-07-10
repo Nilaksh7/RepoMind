@@ -78,7 +78,16 @@ async function importRepository(githubUrl, userId) {
         try {
           await indexRepositoryEmbeddings(repository.id);
         } catch (error) {
-          console.error(error);
+          console.error("========== AI INDEXING FAILED ==========");
+
+          if (error.response) {
+            console.error("Status:", error.response.status);
+            console.error("Response:", error.response.data);
+          } else {
+            console.error("Message:", error.message);
+          }
+
+          console.error("========================================");
         }
 
         return repository;
