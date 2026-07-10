@@ -9,11 +9,13 @@ Understand any unfamiliar codebase in minutes—not hours—through semantic sea
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js&logoColor=white)](https://expressjs.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Google Gemini](https://img.shields.io/badge/Gemini-AI-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **Import • Search • Understand • Explore Any GitHub Repository**
+
+🚀 **Live Demo:** https://repo-mind-mu.vercel.app
 
 [Features](#-features) • [Architecture](#-architecture) • [Getting Started](#-getting-started) • [Screenshots](#-screenshots) • [Roadmap](#-roadmap)
 
@@ -25,7 +27,7 @@ Understand any unfamiliar codebase in minutes—not hours—through semantic sea
 
 Understanding an unfamiliar GitHub repository is often slow and frustrating. Developers spend hours navigating folders, reading source files, tracing dependencies, and figuring out how different components interact before they can contribute productively.
 
-**RepoMind** eliminates that friction by transforming any public GitHub repository into an AI-powered workspace. It combines repository indexing, semantic search, dependency analysis, Retrieval-Augmented Generation (RAG), and Large Language Models to help developers explore and understand codebases significantly faster.
+**RepoMind** transforms any public GitHub repository into an AI-powered workspace. It combines repository indexing, semantic code search, vector embeddings, Retrieval-Augmented Generation (RAG), dependency analysis, and Large Language Models to help developers understand unfamiliar codebases significantly faster.
 
 ---
 
@@ -45,15 +47,15 @@ Instead of manually reading hundreds of files, RepoMind lets developers:
 
 # ✨ Features
 
-| Feature                   | Description                                                                                                                                                     |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Repository Import**     | Import any public GitHub repository with automatic indexing, AI embedding generation, and repository refresh when newer commits are detected.                   |
-| **AI Repository Summary** | Generate a high-level overview covering project purpose, architecture, modules, technologies, and workflows.                                                    |
-| **AI File Explanation**   | Instantly understand any source file, including its responsibilities, code flow, important functions, and interactions with other files.                        |
-| **Semantic Code Search**  | Search repositories using natural language instead of filenames or exact symbols (e.g. _authentication_, _JWT_, _payment middleware_).                          |
-| **Ask Repository**        | Chat with any imported repository using Retrieval-Augmented Generation (RAG). Ask questions such as _How does authentication work?_ or _Where is JWT verified?_ |
-| **Dependency Graph**      | Visualize relationships between files using an interactive dependency graph for easier navigation.                                                              |
-| **Google Authentication** | Secure Google OAuth login with JWT-based authentication and user-specific repositories.                                                                         |
+| Feature | Description |
+|---------|-------------|
+| **Repository Import** | Import any public GitHub repository with automatic indexing, vector embedding generation, semantic search support, and repository refresh when newer commits are detected. |
+| **AI Repository Summary** | Generate a high-level overview covering project purpose, architecture, modules, technologies, and workflows. |
+| **AI File Explanation** | Instantly understand any source file, including its responsibilities, code flow, important functions, and interactions with other files. |
+| **Semantic Code Search** | Search repositories using natural language instead of filenames or exact symbols (e.g. *authentication*, *JWT*, *payment middleware*). |
+| **Ask Repository** | Chat with any imported repository using Retrieval-Augmented Generation (RAG). Ask questions such as *How does authentication work?* or *Where is JWT verified?* |
+| **Dependency Graph** | Visualize relationships between files using an interactive dependency graph for easier navigation. |
+| **Google Authentication** | Secure Google OAuth login with JWT-based authentication and user-specific repositories. |
 
 ---
 
@@ -72,30 +74,29 @@ Instead of manually reading hundreds of files, RepoMind lets developers:
                              │
                ┌─────────────┴─────────────┐
                │                           │
-        ┌──────▼───────┐          ┌────────▼─────────┐
-        │ PostgreSQL   │          │ FastAPI AI       │
-        │ Repository   │          │ Service          │
-        │ Metadata     │          └────────┬─────────┘
-        └──────────────┘                   │
-                                           ▼
-                               Gemini + Sentence Transformers
+        ┌──────▼──────────┐       ┌────────▼─────────┐
+        │ PostgreSQL      │       │ FastAPI AI       │
+        │ + pgvector      │       │ Service          │
+        └─────────────────┘       └────────┬─────────┘
+                                           │
+                                  Gemini + Cohere Embeddings
                                            │
                                            ▼
-                                  FAISS Vector Search
+                                 RAG + Semantic Search
 ```
 
 ---
 
 # 🧰 Tech Stack
 
-| Frontend     | Backend      | AI Service            |
-| ------------ | ------------ | --------------------- |
-| React 19     | Node.js      | FastAPI               |
-| Vite         | Express.js   | Google Gemini         |
-| Tailwind CSS | PostgreSQL   | Sentence Transformers |
-| React Router | JWT          | FAISS                 |
-| Axios        | Google OAuth | RAG Pipeline          |
-| React Flow   | REST APIs    | Vector Embeddings     |
+| Frontend | Backend | AI Service |
+|----------|----------|------------|
+| React 19 | Node.js | FastAPI |
+| Vite | Express.js | Google Gemini |
+| Tailwind CSS | PostgreSQL + pgvector | Cohere Embeddings |
+| React Router | JWT Authentication | RAG Pipeline |
+| Axios | Google OAuth | Semantic Search |
+| React Flow | REST APIs | Python |
 
 ---
 
@@ -120,8 +121,6 @@ RepoMind/
 │   ├── services/
 │   └── utils/
 │
-├── sample-repos/          # Sample repositories for testing
-│
 └── README.md
 ```
 
@@ -133,8 +132,9 @@ RepoMind/
 
 - Node.js (v18+)
 - Python (3.10+)
-- PostgreSQL
+- PostgreSQL with pgvector extension
 - Google Gemini API Key
+- Cohere API Key
 - Google OAuth Client ID
 
 ---
@@ -200,6 +200,8 @@ JWT_SECRET=
 
 GOOGLE_CLIENT_ID=
 
+GITHUB_TOKEN=
+
 AI_SERVICE_URL=
 
 AI_SERVICE_API_KEY=
@@ -220,9 +222,15 @@ VITE_GOOGLE_CLIENT_ID=
 ## ai-service/.env
 
 ```env
+DATABASE_URL=
+
 GEMINI_API_KEY=
 
+COHERE_API_KEY=
+
 GEMINI_MODEL=gemini-3.1-flash-lite
+
+AI_SERVICE_API_KEY=
 ```
 
 ---
@@ -322,8 +330,9 @@ GEMINI_MODEL=gemini-3.1-flash-lite
 - [ ] Repository comparison
 - [ ] AI code review
 - [ ] Pull Request summarization
+- [ ] Incremental repository indexing
+- [ ] Multi-repository semantic search
 - [ ] Auto-generated architecture diagrams
-- [ ] Multi-repository search
 - [ ] Team workspaces
 - [ ] Repository documentation generation
 - [ ] Code quality analysis
@@ -334,8 +343,7 @@ GEMINI_MODEL=gemini-3.1-flash-lite
 
 **Nilaksh Berwal**
 
-Computer Science Undergraduate  
-National Institute of Technology Delhi
+Computer Science Undergraduate at **National Institute of Technology Delhi**
 
 [![GitHub](https://img.shields.io/badge/GitHub-Nilaksh7-181717?logo=github)](https://github.com/Nilaksh7)
 
@@ -343,4 +351,4 @@ National Institute of Technology Delhi
 
 ---
 
-⭐ If you found RepoMind useful, consider giving the repository a star!
+⭐ **If you found RepoMind useful, consider giving the repository a star!**
