@@ -3,46 +3,47 @@ const pool = require("../config/db");
 async function saveRepositoryFiles(repositoryId, entries, client) {
   const db = client || pool;
 
-  if (!Array.isArray(entries) || entries.length === 0) {
-    return;
+  if (!entries.length) return;
+
+  const BATCH_SIZE = 1000;
+
+  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+    const batch = entries.slice(i, i + BATCH_SIZE);
+
+    const values = [];
+    const placeholders = [];
+
+    batch.forEach((entry, index) => {
+      const start = index * 6 + 1;
+
+      placeholders.push(
+        `($${start}, $${start + 1}, $${start + 2}, $${start + 3}, $${start + 4}, $${start + 5})`,
+      );
+
+      values.push(
+        repositoryId,
+        entry.path,
+        entry.name,
+        entry.type,
+        entry.extension,
+        entry.parentPath,
+      );
+    });
+
+    const query = `
+      INSERT INTO repository_files (
+        repository_id,
+        path,
+        name,
+        type,
+        extension,
+        parent_path
+      )
+      VALUES ${placeholders.join(", ")}
+    `;
+
+    await db.query(query, values);
   }
-
-  const values = [];
-  const placeholders = [];
-
-  entries.forEach((entry, index) => {
-    const startIndex = index * 6 + 1;
-    const rowPlaceholders = Array.from(
-      { length: 6 },
-      (_, offset) => `$${startIndex + offset}`,
-    ).join(", ");
-
-    placeholders.push(`(${rowPlaceholders})`);
-    values.push(
-      repositoryId,
-      entry.path,
-      entry.name,
-      entry.type,
-      entry.extension,
-      entry.parentPath,
-    );
-  });
-
-  const query = `
-    INSERT INTO repository_files (
-      repository_id,
-      path,
-      name,
-      type,
-      extension,
-      parent_path
-    )
-    VALUES ${placeholders.join(", ")}
-    RETURNING id, path, type;
-  `;
-
-  const result = await db.query(query, values);
-  return result.rows;
 }
 
 async function getRepositoryFiles(repositoryId, client) {
