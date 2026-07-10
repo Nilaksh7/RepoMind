@@ -3,6 +3,14 @@ const { parseGitHubRepositoryUrl } = require("../utils/github-url");
 async function getLatestRepositoryVersion(githubUrl) {
   const { owner, repositoryName } = parseGitHubRepositoryUrl(githubUrl);
 
+  console.log("Original URL:", githubUrl);
+  console.log("Owner:", owner);
+  console.log("Repository:", repositoryName);
+  console.log(
+    "GitHub API URL:",
+    `https://api.github.com/repos/${owner}/${repositoryName}`,
+  );
+
   const repositoryResponse = await fetch(
     `https://api.github.com/repos/${owner}/${repositoryName}`,
     {
